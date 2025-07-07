@@ -1,0 +1,155 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: #ffffff;
+  color: #000000;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 2rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 300;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.upload-section {
+  background: #f8f8f8;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  transition: border-color 0.3s;
+}
+
+.upload-section:hover {
+  border-color: #999;
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-button {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s;
+}
+
+.upload-button:hover {
+  background: #333;
+}
+
+.upload-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.file-list {
+  margin-top: 1rem;
+}
+
+.file-item {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.predict-button {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 1rem 3rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  margin: 2rem auto;
+  display: block;
+}
+
+.predict-button:hover {
+  background: #333;
+}
+
+.predict-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.results {
+  background: #f8f8f8;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+.results h3 {
+  margin-bottom: 1rem;
+  font-weight: 400;
+}
+
+.stage-result {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.stage-name {
+  font-weight: 500;
+}
+
+.confidence {
+  color: #666;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.error {
+  background: #ffe6e6;
+  border: 1px solid #ffcccc;
+  color: #cc0000;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
