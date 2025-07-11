@@ -1,19 +1,55 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface PredictionResult {
   stage: string
-  confidence: number
   window: number
+  file?: string
 }
 
 export default function Home() {
   const [files, setFiles] = useState<File[]>([])
+  const [selectedFile, setSelectedFile] = useState<string>('')
+  const [availableFiles, setAvailableFiles] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<PredictionResult[]>([])
   const [error, setError] = useState<string>('')
   const [message, setMessage] = useState<string>('')
+  const [useLocalFiles, setUseLocalFiles] = useState(true)
+  const [startWindow, setStartWindow] = useState(0)
+  const [numWindows, setNumWindows] = useState(5)
+  const [totalEpochs, setTotalEpochs] = useState(0)
+
+  useEffect(() => {
+    fetchAvailableFiles()
+  }, [])
+
+  const fetchAvailableFiles = async () => {
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+      const response = await fetch(`${backendUrl}/files`)
+      const data = await response.json()
+      setAvailableFiles(data.files || [])
+      if (data.files && data.files.length > 0) {
+        setSelectedFile(data.files[0])
+        fetchFileInfo(data.files[0])
+      }
+    } catch (err) {
+      console.error('Failed to fetch files:', err)
+    }
+  }
+
+  const fetchFileInfo = async (filename: string) => {
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+      const response = await fetch(`${backendUrl}/file-info/${filename}`)
+      const data = await response.json()
+      setTotalEpochs(data.total_epochs || 0)
+    } catch (err) {
+      console.error('Failed to fetch file info:', err)
+    }
+  }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files || [])
@@ -29,10 +65,22 @@ export default function Home() {
     setMessage('')
 
     try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
       const formData = new FormData()
-      files.forEach(file => formData.append('files', file))
+      
+      if (useLocalFiles && selectedFile) {
+        formData.append('filename', selectedFile)
+        formData.append('start_window', startWindow.toString())
+        formData.append('num_windows', numWindows.toString())
+      } else if (!useLocalFiles && files.length > 0) {
+        files.forEach(file => formData.append('files', file))
+        formData.append('start_window', startWindow.toString())
+        formData.append('num_windows', numWindows.toString())
+      } else {
+        throw new Error('No file selected or uploaded')
+      }
 
-      const response = await fetch('/api/predict', {
+      const response = await fetch(`${backendUrl}/predict`, {
         method: 'POST',
         body: formData,
       })
@@ -43,9 +91,9 @@ export default function Home() {
 
       const data = await response.json()
       setResults(data.predictions || [])
-      setMessage(data.message || '')
+      setMessage(`Processed ${data.predictions?.length || 0} windows successfully`)
     } catch (err) {
-      setError('Failed to process files. Please try again.')
+      setError('Failed to connect to backend. Make sure the backend server is running on port 8000.')
     } finally {
       setLoading(false)
     }
@@ -65,27 +113,119 @@ export default function Home() {
   return (
     <div className="container">
       <header className="header">
-        <h1 className="title">Sleep Disorder Prediction</h1>
+        <h1 className="title">Sleep Stage Classification</h1>
         <p className="subtitle">
           Multimodal sleep stage classification using EEG, EOG, and EMG signals
         </p>
       </header>
 
       <div className="upload-section">
-        <input
-          type="file"
-          id="file-input"
-          className="file-input"
-          multiple
-          accept=".edf"
-          onChange={handleFileUpload}
-        />
-        <label htmlFor="file-input" className="upload-button">
-          Select EDF Files
-        </label>
-        <p style={{ marginTop: '1rem', color: '#666' }}>
-          Upload PSG and Hypnogram EDF files for analysis
-        </p>
+        <div style={{ marginBottom: '1rem' }}>
+          <label>
+            <input
+              type="radio"
+              checked={useLocalFiles}
+              onChange={() => setUseLocalFiles(true)}
+            />
+            Use sample EDF files
+          </label>
+          <label style={{ marginLeft: '1rem' }}>
+            <input
+              type="radio"
+              checked={!useLocalFiles}
+              onChange={() => setUseLocalFiles(false)}
+            />
+            Upload your own files
+          </label>
+        </div>
+
+        {useLocalFiles ? (
+          <div>
+            <select
+              value={selectedFile}
+              onChange={(e) => {
+                setSelectedFile(e.target.value)
+                fetchFileInfo(e.target.value)
+              }}
+              style={{ padding: '0.5rem', marginBottom: '1rem', width: '100%' }}
+            >
+              {availableFiles.map(file => (
+                <option key={file} value={file}>{file}</option>
+              ))}
+            </select>
+            <p style={{ color: '#666' }}>Select a sample PSG file for analysis</p>
+            
+            <div style={{ marginBottom: '1rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <label>Start Window: </label>
+                <input
+                  type="number"
+                  min="0"
+                  max={Math.max(0, totalEpochs - 1)}
+                  value={startWindow}
+                  onChange={(e) => setStartWindow(parseInt(e.target.value) || 0)}
+                  style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
+                />
+                <span style={{ marginLeft: '1rem' }}>Number of Windows: </span>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={numWindows}
+                  onChange={(e) => setNumWindows(parseInt(e.target.value) || 5)}
+                  style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
+                />
+              </div>
+              <p style={{ color: '#666', fontSize: '0.9rem', margin: '0.5rem 0' }}>
+                Total epochs available: {totalEpochs} | 
+                Analyzing windows {startWindow + 1} to {Math.min(startWindow + numWindows, totalEpochs)}
+              </p>
+              <p style={{ color: '#888', fontSize: '0.8rem', margin: 0 }}>
+                💡 Early windows (0-50) typically show Wake/Light Sleep. 
+                Later windows (500+) show deeper sleep stages and REM.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <input
+              type="file"
+              id="file-input"
+              className="file-input"
+              multiple
+              accept=".edf"
+              onChange={handleFileUpload}
+            />
+            <label htmlFor="file-input" className="upload-button">
+              Select EDF Files
+            </label>
+            <p style={{ marginTop: '1rem', color: '#666' }}>
+              Upload PSG and Hypnogram EDF files for analysis
+            </p>
+            
+            <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <label>Start Window: </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={startWindow}
+                  onChange={(e) => setStartWindow(parseInt(e.target.value) || 0)}
+                  style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
+                />
+                <span style={{ marginLeft: '1rem' }}>Number of Windows: </span>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={numWindows}
+                  onChange={(e) => setNumWindows(parseInt(e.target.value) || 5)}
+                  style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {files.length > 0 && (
@@ -105,7 +245,7 @@ export default function Home() {
         onClick={handlePredict}
         disabled={loading}
       >
-        {loading ? 'Processing...' : files.length > 0 ? 'Predict Sleep Stages' : 'Test with Demo Data'}
+        {loading ? 'Processing...' : 'Predict Sleep Stages'}
       </button>
 
       {message && (
@@ -133,11 +273,8 @@ export default function Home() {
             <div key={index} className="stage-result">
               <div>
                 <span className="stage-name">
-                  Window {result.window}: {getStageLabel(result.stage)}
+                  {result.file && result.file !== 'demo' ? `${result.file} - ` : ''}Window {result.window}: {getStageLabel(result.stage.toString())}
                 </span>
-              </div>
-              <div className="confidence">
-                {(result.confidence * 100).toFixed(1)}% confidence
               </div>
             </div>
           ))}

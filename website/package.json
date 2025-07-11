@@ -6,9 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "postinstall": "python3 -m venv .venv && .venv/bin/python -m pip install --break-system-packages -r requirements.txt",
-    "test": ".venv/bin/python -m pytest -q"
+    "lint": "next lint"
   },
   "dependencies": {
     "next": "^14.0.4",

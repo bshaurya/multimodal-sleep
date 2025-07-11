@@ -1,7 +1,4 @@
 lit_review_notes.md
 *.edf
-prepare_model.py
-setup_model.py
-test_edf.py
-test_model.py
-model_inference.py
+
+.venv/

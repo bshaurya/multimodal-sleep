@@ -32,7 +32,6 @@ venv/
 ENV/
 
 # Model files
-sleep_model.keras
 *.h5
 *.pb
 

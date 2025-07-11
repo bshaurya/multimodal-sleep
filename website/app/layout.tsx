@@ -2,7 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Sleep Disorder Prediction',
+  title: 'Sleep Stage Prediction',
   description: 'Multimodal sleep stage classification using EEG, EOG, and EMG signals',
 }
 
