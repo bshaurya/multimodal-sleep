@@ -8,21 +8,12 @@ import os
 from typing import List, Optional
 from fastapi import Form
 import uvicorn
-
-app = FastAPI(title="Sleep Stage Classification API")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+from contextlib import asynccontextmanager
 
 model = None
 
-@app.on_event("startup")
-async def load_sleep_model():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     global model
     model_path = "sleep_model.keras"
     if os.path.exists(model_path):
@@ -35,6 +26,18 @@ async def load_sleep_model():
     else:
         print("Model file not found")
         raise HTTPException(status_code=500, detail="Model file not found")
+    
+    yield
+
+app = FastAPI(title="Sleep Stage Classification API", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def process_edf_file(psg_path, start_window=0, num_windows=5):
     """Process EDF file and extract features for specified windows"""
@@ -174,4 +177,5 @@ async def predict_sleep_stages(
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
