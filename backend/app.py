@@ -86,22 +86,17 @@ def process_edf_file(psg_path, start_window=0, num_windows=5):
 
 @app.get("/files")
 async def list_files():
-    edf_dir = "sleep-telemetry"
-    if not os.path.exists(edf_dir):
-        return {"files": []}
-    
-    files = [f for f in os.listdir(edf_dir) if f.endswith('-PSG.edf')]
+    files = [f for f in os.listdir('.') if f.endswith('-PSG.edf')]
     return {"files": sorted(files)}
 
 @app.get("/file-info/{filename}")
 async def get_file_info(filename: str):
     """get total epochs for a file"""
-    file_path = os.path.join("sleep-telemetry", filename)
-    if not os.path.exists(file_path):
+    if not os.path.exists(filename):
         raise HTTPException(status_code=404, detail="File not found")
     
     try:
-        raw = mne.io.read_raw_edf(file_path, preload=False, verbose=False)
+        raw = mne.io.read_raw_edf(filename, preload=False, verbose=False)
         epoch_len = int(30 * raw.info["sfreq"])
         total_epochs = raw.n_times // epoch_len
         return {"total_epochs": int(total_epochs)}
@@ -122,11 +117,10 @@ async def predict_sleep_stages(
         results = []
         
         if filename:
-            file_path = os.path.join("sleep-telemetry", filename)
-            if not os.path.exists(file_path):
+            if not os.path.exists(filename):
                 raise HTTPException(status_code=404, detail="File not found")
             
-            Xe, Xo, Xm, total_epochs = process_edf_file(file_path, start_window, num_windows)
+            Xe, Xo, Xm, total_epochs = process_edf_file(filename, start_window, num_windows)
             
             if len(Xe) == 0:
                 raise HTTPException(status_code=400, detail="No valid epochs found in specified range")
