@@ -168,15 +168,44 @@ export default function Home() {
   return (
     <div className="container">
       <header className="header">
-        <h1 className="title">Sleep Stage Classification</h1>
-        <p className="subtitle">
-          Multimodal sleep stage classification using EEG, EOG, and EMG signals
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div>
+            <h1 className="title">Sleep Stage Classification</h1>
+            <p className="subtitle">
+              Multimodal sleep stage classification using EEG, EOG, and EMG signals
+            </p>
+          </div>
+          <a 
+            href="https://github.com/bshaurya/multimodal-sleep/blob/main/research.ipynb" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              background: '#24292e',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              transition: 'background 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = '#1a1e22'}
+            onMouseOut={(e) => e.currentTarget.style.background = '#24292e'}
+          >
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            View Training Code
+          </a>
+        </div>
       </header>
 
       <div className="upload-section">
-        <div style={{ marginBottom: '1rem' }}>
-          <label>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ marginRight: '1.5rem' }}>
             <input
               type="radio"
               checked={useLocalFiles}
@@ -184,7 +213,7 @@ export default function Home() {
             />
             Use sample EDF files
           </label>
-          <label style={{ marginLeft: '1rem' }}>
+          <label>
             <input
               type="radio"
               checked={!useLocalFiles}
@@ -211,32 +240,36 @@ export default function Home() {
             <p style={{ color: '#666' }}>Select a sample PSG file for analysis</p>
             
             <div style={{ marginBottom: '1rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <label>Start Window: </label>
-                <input
-                  type="number"
-                  min="0"
-                  max={Math.max(0, totalEpochs - 1)}
-                  value={startWindow}
-                  onChange={(e) => setStartWindow(parseInt(e.target.value) || 0)}
-                  style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
-                />
-                <span style={{ marginLeft: '1rem' }}>Number of Windows: </span>
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={numWindows}
-                  onChange={(e) => setNumWindows(parseInt(e.target.value) || 5)}
-                  style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
-                />
+              <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem' }}>
+                <div>
+                  <label>Start Window: </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max={Math.max(0, totalEpochs - 1)}
+                    value={startWindow}
+                    onChange={(e) => setStartWindow(parseInt(e.target.value) || 0)}
+                    style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
+                  />
+                </div>
+                <div>
+                  <label>Number of Windows: </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={numWindows}
+                    onChange={(e) => setNumWindows(parseInt(e.target.value) || 5)}
+                    style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
+                  />
+                </div>
               </div>
               <p style={{ color: '#666', fontSize: '0.9rem', margin: '0.5rem 0' }}>
                 Total epochs available: {totalEpochs} | 
                 Analyzing windows {startWindow + 1} to {Math.min(startWindow + numWindows, totalEpochs)}
               </p>
               <p style={{ color: '#888', fontSize: '0.8rem', margin: 0 }}>
-                💡 Sleep cycles: Wake/Light (0-60min) → Deep Sleep (60-180min) → REM cycles every 90min
+                Sleep cycles: Wake/Light (0-60min) → Deep Sleep (60-180min) → REM cycles every 90min
               </p>
             </div>
           </div>
@@ -258,24 +291,28 @@ export default function Home() {
             </p>
             
             <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <label>Start Window: </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={startWindow}
-                  onChange={(e) => setStartWindow(parseInt(e.target.value) || 0)}
-                  style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
-                />
-                <span style={{ marginLeft: '1rem' }}>Number of Windows: </span>
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={numWindows}
-                  onChange={(e) => setNumWindows(parseInt(e.target.value) || 5)}
-                  style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
-                />
+              <div style={{ display: 'flex', gap: '2rem', marginBottom: '0.5rem' }}>
+                <div>
+                  <label>Start Window: </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={startWindow}
+                    onChange={(e) => setStartWindow(parseInt(e.target.value) || 0)}
+                    style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
+                  />
+                </div>
+                <div>
+                  <label>Number of Windows: </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={numWindows}
+                    onChange={(e) => setNumWindows(parseInt(e.target.value) || 5)}
+                    style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
+                  />
+                </div>
               </div>
             </div>
           </div>
